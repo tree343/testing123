@@ -1,4 +1,60 @@
 
+Refined Final Project Proposal
+
+2D games for Action-conditioned video generation, or generative world models, or Video prediction with diffusion
+
+
+1-Sentence Overall Idea: 
+Background: 
+Falsifiable Hypothesis: 
+Methodology: 
+Experimental Design:
+Baseline: 
+Resources/Assets:
+Models: 
+Datasets: 
+Code: 
+Compute Estimation: 
+Verification Note:
+HF Models: 
+HF Datasets: 
+GitHub Repos: 
+Papers: 
+
+Error Aware Training
+Source of Inspiration: Matrix Game 3.0 Paper
+Relates to Autoregressive Generation of Transformers (Dit, Vit) 
+Main Idea: While training the module will see imperfect inputs at inference time, training it on imperfect inputs too using its past residual 
+General Steps
+Step 1: Collect Errors (The “Error Buffer”)
+Residual (R) = x_hat - x 
+Step 2: Inject Errors back into training
+When training the model on the next batch, instead of feeding it perfectly with clean past frames, take a real past frame and corrupt it with one of those stored errors
+x_tilda = x + ALPHA * R    ALPHA = controls strength of corruption
+Step 3: Force the model to predict correct future frames anyway
+The model is still asked to predict the correct future frames, even though its inputs are now slightly corrupted 
+self-correction: the model learns to ignore or smooth out small eros in its inputs rather than amplifying them 
+The idea relates to Scheduled Sampling and other papers follow similar idea but Matrix Game 3.0 was the first to do it for diffusion based video generation 
+The errors are not random, they are the actual kind of errors the model itself tends to make and this is more realistic than just adding Gaussian noise because it teaches the model to handle its own specific failure does 
+
+Adaptive Contrastive Masked Autoencoders for Structured Representation Learning
+Source of Inspiration: Adaptive Contrastive Masked Autoencoders for Structured Representation Learning
+Main Idea: Use Contrastive Loss for encoder part and include extra term in objective 
+Investigate whether injecting coarse metadata during masked autoencoder pretraining improves downstream fine-grained medical image classification in low-data regimes.
+Evaluating the Impact of Coarse Label Injection on Masked Autoencoders for Specific Image Data
+1-Sentence Overall Idea: Investigate whether injecting coarse metadata during masked autoencoder pretraining improves downstream fine-grained <specific datatset> image classification in low-data regimes.
+Background: The ViC-MAE (Visual Contrastive Masked Autoencoder) framework demonstrates that injecting coarse labels during masked autoencoder (MAE) pretraining via a supervised contrastive loss significantly improves downstream performance in low-data regimes. This project applies that concept to medical image classification, where fine-grained labels are expensive but coarse metadatais often readily available.
+Methodology: Pretrain a ViT using the ViC-MAE objective, applying a contrastive loss to the visible patches based on the coarse metadata. Fine-tune the pretrained model on a small subset of the dataset using fine-grained labels. Compare the performance against a standard MAE baseline trained only with reconstruction loss.
+Baseline: A standard ViT-MAE trained solely with a pixel-level reconstruction loss (no contrastive head or coarse labels) and fine-tuned under identical conditions.
+Models: facebook/vit-mae-base via Hugging Face.
+
+Data-Efficient Masked Autoencoders
+Investigate whether continued MAE pretraining on unlabeled <data specific> imagery outperforms standard ImageNet-pretrained transfer when fine-tuning on very limited labeled data.
+
+Memory Consistency in Autoregressive Video Generation Under Extreme Masking
+Evaluate the robustness of context buffers in autoregressive video generation models when faced with missing or dropped input frames.
+
+Quantify the trade-off between VAE latent compression ratios and generated image quality (FID) when fine-tuning small Diffusion Transformers.
 
 
 
@@ -90,3 +146,73 @@ I have enough information from the abstract, project page, and ICLR metadata. He
 - **View-wise sampling + autoregressive generation** enables long-context coherence that prior probabilistic field models lacked
 - **Game demo:** Super Mario Bros (2D), with a downloadable demo zip on the project page. No full training code, no pretrained weights publicly released.
 - **Relatively compact** at 675M — more feasible for single-GPU finetuning than multi-B models
+
+
+
+
+Github repository of Game Generation papers: JingyeChen/awesome-game-generation
+
+
+Papers not based on Video games 
+
+AVID: Adapting Video Diffusion Models to World Models
+Paper: https://arxiv.org/abs/2410.12822
+
+PAN: A World Model for General, Interactable, and Long-Horizon World Simulation
+Paper: https://arxiv.org/abs/2511.09057
+
+
+
+Field-DiT (Diffusion Transformer on Unified Video, 3D, and Game) Field-DiT is an architecture designed to unify different visual tasks under a single Transformer backbone. It treats 2D game generation as a specialized case of video generation where the model is conditioned on control actions. (https://openreview.net/forum?id=w6YS9A78fq)
+
+
+Models names are in Red
+
+Playable Game Generation - PlayGen
+Paper: https://arxiv.org/abs/2412.00887
+GitHub: GreatX3/Playable-Game-Generation
+
+Video Game Generation: A Practical Study using Mario - MarioVGG
+Project page: https://virtual-protocol.github.io/mario-videogamegen/
+Model: https://huggingface.co/virtuals-protocol/mario-videogamegen
+Blog post: https://virtuals.substack.com/p/video-game-generation-a-practical
+
+Diffusion for World Modeling: Visual Details Matter in Atari – DIAMOND
+Paper: https://github.com/eloialonso/diamond
+GitHub: https://github.com/eloialonso/diamond
+Project page: https://diamond-wm.github.io/
+
+Matrix Game 3.0 - Matrix Game 3.0
+Paper: https://arxiv.org/abs/2604.08995
+GitHub: https://github.com/SkyworkAI/Matrix-Game
+Project page: https://matrix-game-v3.github.io/
+Huggingface: https://huggingface.co/Skywork/Matrix-Game-3.0
+
+Training Agents Inside of Scalable World Models – Dreamer 4
+Paper: https://arxiv.org/abs/2509.24527
+Project page: https://danijar.com/project/dreamer4/
+
+(no name paper) – Open-Oasis 500M
+GitHub: https://github.com/etched-ai/open-oasis
+Huggingface: https://huggingface.co/Etched/oasis-500m
+
+Model as a Game: On Numerical and Spatial Consistency for Generative Games – MaaG
+Paper: https://arxiv.org/abs/2503.21172
+Project page: https://www.microsoft.com/en-us/research/articles/maag-a-new-framework-for-consistent-ai-generated-games/?lang=ja
+Blog post: https://joshuaberkowitz.us/blog/news-1/maag-model-as-a-game-is-solving-consistency-challenges-in-ai-generated-games-395
+
+Diffusion Models Are Real-Time Game Engines – GameNGen
+Paper: https://arxiv.org/abs/2408.14837
+Project Page: https://gamengen.github.io/
+
+COMBAT: Conditional World Models for Behavioral Agent Training – COMBAT
+Paper: https://arxiv.org/abs/2603.00825
+
+ActionParty: Multi-Subject Action Binding in Generative Video Games – ActionParty
+Paper: https://arxiv.org/abs/2604.02330
+Project page: https://action-party.github.io/
+
+GameGen-X: Interactive Open-world Game Video Generation – GameGen-X
+Paper: https://arxiv.org/abs/2411.00769
+GitHub: https://github.com/GameGen-X/GameGen-X
+Project Page: https://gamegen-x.github.io/

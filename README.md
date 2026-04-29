@@ -1,174 +1,92 @@
-Certainly! Understanding the steps and processes required for node-level, graph-level, and link-level tasks in both transductive and inductive settings can indeed be complex due to the interdependent nature of graph data. Below is an organized table summarizing the steps needed for each possible combination, along with explanations to clarify each approach.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The PDF was binary. Let me try the early readable chunks and also check the HKUST blog for more architecture details.
+
+I have enough information from the abstract, project page, and ICLR metadata. Here's the updated table with Field-DiT added:
 
 ---
 
-## Overview Table of Tasks and Settings
+# Comprehensive Comparison of Game World Models (Updated)
 
-| **Task**               | **Setting**    | **Data Points**                    | **Dataset Splitting**                                                                                                                                                                                                                                                                                                             | **Steps**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-|------------------------|----------------|------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Node Classification** | **Transductive** | Nodes within a single graph         | - **Graph**: Single, complete graph available during all phases.<br>- **Labels**: Node labels are split into training, validation, and test sets.<br>- **Edges**: All edges are used during message passing in all phases.                                                                                                                                             | 1. **Training Phase**:<br>&nbsp;&nbsp;- Use the entire graph for message passing.<br>&nbsp;&nbsp;- Train the model using labels of training nodes only.<br>2. **Validation Phase**:<br>&nbsp;&nbsp;- Use the same graph for message passing.<br>&nbsp;&nbsp;- Evaluate the model on validation nodes.<br>3. **Test Phase**:<br>&nbsp;&nbsp;- Use the same graph.<br>&nbsp;&nbsp;- Evaluate the model on test nodes.                                                                             |
-| **Node Classification** | **Inductive**    | Nodes within separate graphs/subgraphs | - **Graph**: Split into separate subgraphs or use multiple graphs.<br>- **Labels**: Node labels are split accordingly.<br>- **Edges**: Edges between splits are removed; each split contains independent graphs.                                                                                                                                                       | 1. **Training Phase**:<br>&nbsp;&nbsp;- Use training subgraphs/graphs for message passing.<br>&nbsp;&nbsp;- Train the model using labels of training nodes.<br>2. **Validation Phase**:<br>&nbsp;&nbsp;- Use validation subgraphs/graphs.<br>&nbsp;&nbsp;- Evaluate the model on validation nodes.<br>3. **Test Phase**:<br>&nbsp;&nbsp;- Use test subgraphs/graphs.<br>&nbsp;&nbsp;- Evaluate the model on test nodes.<br>- **Note**: Model must generalize to unseen nodes/graphs. |
-| **Graph Classification** | **Inductive**    | Entire graphs                       | - **Graph**: Collection of graphs split into training, validation, and test sets.<br>- **Labels**: Each graph has a label.<br>- **Edges**: Each graph is independent; there are no edges between graphs.                                                                                                                                                                | 1. **Training Phase**:<br>&nbsp;&nbsp;- Train the model on training graphs and their labels.<br>2. **Validation Phase**:<br>&nbsp;&nbsp;- Evaluate the model on validation graphs.<br>3. **Test Phase**:<br>&nbsp;&nbsp;- Evaluate the model on test graphs.<br>- **Note**: Model must generalize to unseen graphs.                                                                                                                                |
-| **Link Prediction**     | **Transductive** | Pairs of nodes (edges) in a single graph | - **Graph**: Single graph available during all phases.<br>- **Edges**: Edges are split twice:<br>&nbsp;&nbsp;1. **Edge Types**:<br>&nbsp;&nbsp;&nbsp;&nbsp;- **Message Edges**: Used for GNN message passing.<br>&nbsp;&nbsp;&nbsp;&nbsp;- **Supervision Edges**: Held out for prediction tasks.<br>&nbsp;&nbsp;2. **Dataset Splits**:<br>&nbsp;&nbsp;&nbsp;&nbsp;- Supervision edges split into training, validation, and test sets. | 1. **Assign Edge Types**:<br>&nbsp;&nbsp;- Split edges into message and supervision edges.<br>2. **Split Supervision Edges**:<br>&nbsp;&nbsp;- Split supervision edges into training, validation, and test sets.<br>3. **Training Phase**:<br>&nbsp;&nbsp;- Use graph with message edges only.<br>&nbsp;&nbsp;- Predict training supervision edges.<br>4. **Validation Phase**:<br>&nbsp;&nbsp;- Add training supervision edges back into the graph.<br>&nbsp;&nbsp;- Predict validation edges.<br>5. **Test Phase**:<br>&nbsp;&nbsp;- Add validation supervision edges.<br>&nbsp;&nbsp;- Predict test edges.<br>- **Note**: Gradual inclusion of supervision edges simulates real-world scenarios where more edges become known over time. |
-| **Link Prediction**     | **Inductive**    | Pairs of nodes within separate graphs | - **Graph**: Multiple graphs split into training, validation, and test sets.<br>- **Edges**: Each graph contains its own message and supervision edges; no edges between graphs.<br>- **Supervision Edges**: Within each graph, split into training, validation, and test sets.                                                                                         | 1. **Training Phase**:<br>&nbsp;&nbsp;- Use training graphs with their message edges.<br>&nbsp;&nbsp;- Predict supervision edges within training graphs.<br>2. **Validation Phase**:<br>&nbsp;&nbsp;- Use validation graphs.<br>&nbsp;&nbsp;- Predict supervision edges within validation graphs.<br>3. **Test Phase**:<br>&nbsp;&nbsp;- Use test graphs.<br>&nbsp;&nbsp;- Predict supervision edges within test graphs.<br>- **Note**: Model must generalize to unseen graphs.          |
+## Architecture & Scale
 
----
+| Model | Year | Backbone | Denoiser Type | Model Size | VAE / Tokenizer | Resolution |
+|-------|------|----------|--------------|------------|----------------|------------|
+| **DIAMOND** | 2024 | Conv U-Net | U-Net (EDM) | ~54M | None (raw pixels) | 84×84 grayscale |
+| **Open-Oasis** | 2024 | DiT (16 blocks, d=1024) | Spatio-Temporal DiT | 500M | ViT-VAE (ViT-L/20) | 256×256 RGB |
+| **Dreamer4-MC** | 2025 | MAE tokenizer + DiT | DiT | Undisclosed | MAE tokenizer | ~128×128 |
+| **nicklashansen/dreamer4** | 2025 | Block-causal Transformer | Shortcut forcing | Undisclosed | Causal tokenizer | 128×128 |
+| **PlayGen (PGG)** | 2024 | VAE + RNN-like DiT | DiT blocks + CNN readout | ~33M DiT + VAE | Custom VAE | 128×128 |
+| **MarioVGG** | 2024 | CogVideoX (fine-tuned) | 3D DiT (text-to-video) | ~2B (CogVideoX-2B) | CogVideoX VAE | 480×320 |
+| **COMBAT** | 2026 | DiT (16 blocks, d=2048) | Spatio-Temporal DiT | 1.2B DiT + 340M VAE | Multi-modal DCAE | 448×736 |
+| **GameNGen** | 2024 | Stable Diffusion 1.4 | U-Net | ~860M | SD 1.4 VAE | 320×240 |
+| **MaaG** | 2025 | PGG baseline + modules | DiT blocks + CNN readout | ~34M (33M DiT + 0.7M modules) | PGG VAE | 96–128×128 |
+| **ActionParty** | 2026 | Wan2.1-1.3B (fine-tuned) | Video DiT + subject state tokens | 1.3B | Wan2.1 VAE (8× spatial) | 512×512 |
+| **GameGen-X** | 2024 | MSDiT + InstructNet | Video DiT (foundation) + InstructNet adapter | Undisclosed (multi-B est.) | 3D Spatio-Temporal VAE | Up to 720p |
+| **Field-DiT** | 2025 | Probabilistic Field DiT | Diffusion on continuous fields | 675M | None (field representation — no VAE) | Flexible (continuous) |
+| **GAIA-1** | 2023 | Autoregressive Transformer | N/A (autoregressive) | 9B | Custom | 288×512 |
 
-## Detailed Steps and Explanations
+## Action Conditioning & Game Domain
 
-### Node Classification
+| Model | Game Domain | Dim | Action Type | # Actions | Multi-Agent | Action Conditioning Method | Prediction Mode |
+|-------|------------|-----|-------------|-----------|-------------|--------------------------|----------------|
+| **DIAMOND** | Atari (26 games inc. MsPacman) | 2D | Discrete | 4–18/game | Single | Learned emb → Adaptive GroupNorm in U-Net | Next frame (AR) |
+| **Open-Oasis** | Minecraft | 3D | Discrete (keyboard) | 25 | Single | One-hot → Linear → added to timestep emb → adaLN | Next frame (AR) |
+| **Dreamer4-MC** | Minecraft | 3D | Discrete (keyboard) | ~25 | Single | Action emb in interleaved sequence | Next frame (AR) |
+| **nicklashansen/dreamer4** | DMControl (30 tasks) | 3D | **Continuous** | Varies | Single | Action emb in interleaved sequence | Next frame (AR) |
+| **PlayGen (PGG)** | Super Mario Bros, DOOM | 2D+3D | Discrete | 7 (Mario), ~8 (DOOM) | Single | Action emb → cross-attention in DiT | Next frame (AR + hidden state) |
+| **MarioVGG** | Super Mario Bros | 2D | **Text prompt** | N/A | Single | Natural language via text encoder | Multi-frame clip |
+| **COMBAT** | Tekken 3 | 3D | Discrete (multi-hot) | 8 buttons | Two-player | Multi-hot → dense emb + sinusoidal time → AdaLNZero | Next frame (AR) |
+| **GameNGen** | DOOM | 3D | Discrete (keys) | ~8 | Single | Learned emb → cross-attention (replaces text cross-attn) | Next frame (AR) |
+| **MaaG** | Traveler, Pong, Pac-Man | 2D | Discrete | 3–5/game | Single | Cross-attention in DiT (PGG baseline) | Next frame (AR + hidden state) |
+| **ActionParty** | 46 Melting Pot games | 2D | Discrete | 25 (7 base + 18 interact) | **Multi (up to 7)** | Per-subject emb → masked cross-attn + RoPE spatial bias | Next frame (AR, T=5) |
+| **GameGen-X** | Open-world AAA games (GTA-like, RPG) | 3D | **Multi-modal**: keyboard + text + video prompt | Keyboard bindings + text | Single | Keyboard → AdaNorm; Text → cross-attn; Video prompt → latent addition | Multi-frame clip (AR continuation) |
+| **Field-DiT** | Super Mario Bros | 2D | Discrete (control actions) | Undisclosed | Single | Control actions as cross-modality condition to DiT | Next frame (AR via view-wise sampling) |
+| **GAIA-1** | Autonomous driving | 3D | **Continuous** | 3 (steer/throttle/brake) | Single | Tokenized + interleaved | Next frame (AR) |
 
-#### Transductive Setting
+## Availability & Compute
 
-- **Dataset**: Single graph where all nodes are connected as per the original structure.
-- **Splitting**:
-  - **Nodes** are split into training, validation, and test sets.
-  - **Edges** remain intact across all phases.
-
-**Steps**:
-
-1. **Training Phase**:
-   - Use the entire graph for GNN message passing.
-   - Train the model using only the labels of the training nodes.
-   - The GNN aggregates information from all nodes (including unlabeled ones) during message passing.
-2. **Validation Phase**:
-   - Continue using the full graph.
-   - Evaluate the model on validation nodes (labels are withheld during training).
-3. **Test Phase**:
-   - Use the same full graph.
-   - Evaluate the model on test nodes.
-
-**Explanation**:
-
-- In the transductive setting, since all nodes are part of a single graph, the GNN can leverage the entire structure for learning.
-- Only the node labels are withheld during validation and testing, not the nodes themselves.
-  
-#### Inductive Setting
-
-- **Dataset**: The graph is partitioned into separate subgraphs, or multiple graphs are used.
-- **Splitting**:
-  - The graph is divided into training, validation, and test subgraphs.
-  - **Edges** between nodes in different splits are removed.
-
-**Steps**:
-
-1. **Training Phase**:
-   - Train the model on training subgraphs using their node labels.
-2. **Validation Phase**:
-   - Evaluate the model on validation subgraphs.
-3. **Test Phase**:
-   - Evaluate the model on test subgraphs.
-
-**Explanation**:
-
-- The model must learn to generalize to nodes and subgraphs it hasn't seen during training.
-- This setting is more challenging as the GNN cannot rely on the global graph structure.
+| Model | Open Code | Open Weights | Training Compute | Real-Time? | Min GPU for Inference |
+|-------|-----------|-------------|-----------------|------------|----------------------|
+| **DIAMOND** | ✅ [GitHub](https://github.com/eloialonso/diamond) | ✅ [HuggingFace](https://huggingface.co/eloialonso/diamond) (26 games) | 1 consumer GPU | ✅ ~20 FPS | Consumer GPU |
+| **Open-Oasis** | ✅ [GitHub](https://github.com/etched-ai/open-oasis) | ✅ [HuggingFace](https://huggingface.co/Etched/oasis-500m) | Multi-GPU (undisclosed) | ✅ 20 FPS | 1× 24GB GPU |
+| **Dreamer4-MC** | ✅ [GitHub](https://github.com/IamCreateAI/Dreamerv4-MC) | ✅ [HuggingFace](https://huggingface.co/IamCreateAI/Dreamerv4-MC) | Undisclosed | ✅ Real-time | 1× GPU |
+| **nicklashansen/dreamer4** | ✅ [GitHub](https://github.com/nicklashansen/dreamer4) | ✅ [HuggingFace](https://huggingface.co/nicklashansen/dreamer4) | 8× RTX 3090, ~72h | ✅ Interactive | 1× GPU (≥2GB) |
+| **PlayGen (PGG)** | ✅ [GitHub](https://github.com/GreatX3/Playable-Game-Generation) | ✅ Google Drive | ~8× A100 (est.) | ✅ 20 FPS on RTX 2060 | RTX 2060 |
+| **MarioVGG** | ✅ [GitHub](https://github.com/Virtual-Protocol/mario-videogamegen) | ✅ [HuggingFace](https://huggingface.co/virtuals-protocol/mario-videogamegen) | 1× RTX 4090 | ❌ Clip gen only | RTX 4090 |
+| **COMBAT** | ❌ Not released | ❌ Not released | 8× H200 | ✅ (after distill) | N/A |
+| **GameNGen** | ❌ Not released | ❌ Not released | 128× TPU-v5e | ✅ 20+ FPS (1 TPU) | N/A |
+| **MaaG** | ❌ Not released (builds on PGG) | ❌ Not released | 8× A100 40GB, ~3 days | ✅ (inherits PGG) | Consumer GPU (est.) |
+| **ActionParty** | ⏳ "Coming soon" ([GitHub](https://github.com/action-party/action-party)) | ❌ Not yet released | Multi-GPU (batch 64, ~87.5k steps) | ❌ (20 diffusion steps) | ~1× GPU w/ 1.3B |
+| **GameGen-X** | ⚠️ Dataset only ([GitHub](https://github.com/GameGen-X/GameGen-X)) | ❌ Not released | 8× H100 | ❌ Clip gen | N/A |
+| **Field-DiT** | ⚠️ Partial ([demo zip](https://kfmei.com/Field-DiT/super-mario-bros-1-1.zip)) | ❌ Not released | Undisclosed | Undisclosed | Undisclosed |
+| **GAIA-1** | ❌ Not released | ❌ Not released | Undisclosed (massive) | Undisclosed | N/A |
 
 ---
 
-### Graph Classification
+## Key Notes on Field-DiT
 
-#### Inductive Setting (Only applicable)
-
-- **Dataset**: A collection of independent graphs.
-- **Splitting**:
-  - Graphs are split into training, validation, and test sets.
-
-**Steps**:
-
-1. **Training Phase**:
-   - Train the model on the training graphs and their labels.
-2. **Validation Phase**:
-   - Evaluate the model on validation graphs.
-3. **Test Phase**:
-   - Evaluate the model on test graphs.
-
-**Explanation**:
-
-- Each graph is an individual data point.
-- The model must capture patterns that generalize across different graphs.
-
----
-
-### Link Prediction
-
-#### Transductive Setting
-
-- **Dataset**: Single graph where edges are both part of the structure and the prediction targets.
-- **Splitting**:
-  - **Edge Types**:
-    - **Message Edges**: Used for GNN message passing.
-    - **Supervision Edges**: Held out and used as labels for prediction.
-  - **Supervision Edges Splitting**:
-    - Supervision edges are further split into training, validation, and test sets.
-
-**Steps**:
-
-1. **Assign Edge Types**:
-   - Split the original edges into message edges and supervision edges.
-2. **Split Supervision Edges**:
-   - Divide supervision edges into training, validation, and test sets.
-3. **Training Phase**:
-   - Use the graph with only message edges.
-   - Train the model to predict the existence of training supervision edges.
-4. **Validation Phase**:
-   - Include **training supervision edges** back into the graph for message passing.
-   - Predict validation supervision edges.
-5. **Test Phase**:
-   - Include **validation supervision edges** into the graph.
-   - Predict test supervision edges.
-
-**Explanation**:
-
-- **Why Gradual Inclusion of Supervision Edges?**
-  - After training, the model has knowledge of the training supervision edges.
-  - Including them during validation allows the model to leverage this known information.
-  - Similarly, including validation edges during testing reflects a scenario where new connections become known over time.
-- **Avoiding Data Leakage**:
-  - By carefully controlling which edges are included during each phase, we prevent the model from "cheating" by using the supervision edges during message passing.
-
-#### Inductive Setting
-
-- **Dataset**: Multiple independent graphs.
-- **Splitting**:
-  - Graphs are divided into training, validation, and test sets.
-  - Each graph contains its own message and supervision edges.
-
-**Steps**:
-
-1. **Training Phase**:
-   - Use training graphs with their message edges.
-   - Train the model to predict supervision edges within these graphs.
-2. **Validation Phase**:
-   - Use validation graphs.
-   - Predict supervision edges within validation graphs.
-3. **Test Phase**:
-   - Use test graphs.
-   - Predict supervision edges within test graphs.
-
-**Explanation**:
-
-- The model must generalize to entirely new graphs not seen during training.
-- Message passing and predictions are confined within each graph.
-
----
-
-## Additional Notes
-
-- **Transductive vs. Inductive**:
-  - **Transductive**: The model has access to the entire graph structure during all phases. It's suitable when the task is to make predictions within a specific, known graph.
-  - **Inductive**: The model must generalize to new, unseen graphs or subgraphs. It's essential when deploying models in dynamic environments where new graphs appear over time.
-
-- **Edge Types in Link Prediction**:
-  - **Message Edges**: Form the structure the GNN uses to propagate information.
-  - **Supervision Edges**: The targets the model is trained to predict.
-
-- **Data Leakage**:
-  - Careful splitting and edge assignment prevent the model from accessing information it shouldn't have during training and evaluation phases.
-
-- **Practical Implementation**:
-  - Libraries like **PyTorch Geometric (PyG)** and **GraphGym** provide functionalities to handle these complex dataset splits and setups.
-
----
-
-By following the steps outlined in this table and explanations, you can correctly set up your datasets and training processes for various graph tasks in both transductive and inductive settings. This structured approach ensures that your GNN models are trained and evaluated properly, leading to reliable and generalizable results.
+- **Venue:** ICLR 2025, from JHU (Kangfu Mei, Mo Zhou, Vishal M. Patel)
+- **Novel paradigm:** Models data as **probabilistic fields** — continuous functions over metric spaces (e.g., (x,y,t) → RGB). This eliminates the need for a VAE/tokenizer entirely.
+- **Unified architecture:** The same 675M DiT backbone handles video, 3D view synthesis, and game generation with **different weights** but the same architecture, using modality-specific cross-conditions (text for video, camera poses for 3D, control actions for games)
+- **View-wise sampling + autoregressive generation** enables long-context coherence that prior probabilistic field models lacked
+- **Game demo:** Super Mario Bros (2D), with a downloadable demo zip on the project page. No full training code, no pretrained weights publicly released.
+- **Relatively compact** at 675M — more feasible for single-GPU finetuning than multi-B models
